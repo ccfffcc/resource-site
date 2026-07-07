@@ -58,6 +58,36 @@
             <textarea name="translationCategories" rows="4" placeholder="动效, 图标, 插画, 字体, 配色, 设计工具, 写作, 办公效率"></textarea>
           </label>
 
+          <h2>网站自动刷新</h2>
+          <label class="inline">
+            <input name="deployEnabled" type="checkbox">
+            收藏成功后自动触发 GitHub Actions 刷新网站
+          </label>
+          <label>
+            GitHub 用户名
+            <input name="deployOwner" placeholder="ccfffcc">
+          </label>
+          <label>
+            GitHub 仓库名
+            <input name="deployRepo" placeholder="resource-site">
+          </label>
+          <label>
+            工作流文件名
+            <input name="deployWorkflow" placeholder="deploy-resources-site.yml">
+          </label>
+          <label>
+            部署分支
+            <input name="deployRef" placeholder="master">
+          </label>
+          <label>
+            GitHub Token
+            <input name="deployToken" type="password" autocomplete="off" placeholder="需要能触发 Actions 的 token">
+          </label>
+          <label>
+            触发间隔（秒）
+            <input name="deployCooldownSeconds" type="number" min="30" step="30" placeholder="120">
+          </label>
+
           <h2>字段映射</h2>
           <label>
             标题字段

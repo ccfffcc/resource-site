@@ -12,6 +12,15 @@ const DEFAULT_CONFIG = {
     maxContentChars: 12000,
     categories: "动效, 图标, 插画, 字体, 配色, 设计工具, 设计灵感, UI/UX, 前端开发, 后端开发, 开发工具, AI工具, 提示词, 写作, 办公效率, 产品运营, 营销增长, 数据分析, 学习资料, 文章, 资源导航, 其他"
   },
+  deploy: {
+    enabled: false,
+    owner: "",
+    repo: "resource-site",
+    workflow: "deploy-resources-site.yml",
+    ref: "master",
+    token: "",
+    cooldownSeconds: 120
+  },
   fields: {
     title: "标题",
     url: "URL",
@@ -26,6 +35,7 @@ const DEFAULT_CONFIG = {
 
 const TOKEN_CACHE_KEY = "tenantAccessTokenCache";
 const RECENT_SYNC_KEY = "recentSyncResults";
+const LAST_DEPLOY_TRIGGER_KEY = "lastDeployTriggerAt";
 const MAX_RECENT_RESULTS = 20;
 
 chrome.runtime.onInstalled.addListener(async () => {
@@ -106,6 +116,12 @@ async function syncBookmark(bookmarkId, bookmark) {
     message: buildSyncSuccessMessage(createResult),
     syncedAt: new Date().toISOString()
   };
+
+  const deployMessage = await triggerSiteDeployIfEnabled(config, result);
+  if (deployMessage) {
+    result.message = `${result.message}；${deployMessage}`;
+  }
+
   await recordResult(result);
   return result;
 }
@@ -135,6 +151,10 @@ function mergeConfig(defaultConfig, savedConfig) {
     translation: {
       ...defaultConfig.translation,
       ...(savedConfig.translation || {})
+    },
+    deploy: {
+      ...defaultConfig.deploy,
+      ...(savedConfig.deploy || {})
     },
     fields: {
       ...defaultConfig.fields,
@@ -630,6 +650,67 @@ async function upsertBitableRecord(target, existingRecordId, record) {
 function buildSyncSuccessMessage(result) {
   const actionText = result.action === "updated" ? "已更新飞书多维表格原记录" : "已同步到飞书多维表格";
   return result.fallbackUsed ? `${actionText}（部分字段格式需调整）` : actionText;
+}
+
+async function triggerSiteDeployIfEnabled(config, syncResult) {
+  if (!config.deploy?.enabled) return "";
+
+  try {
+    const skippedReason = await shouldSkipDeployTrigger(config.deploy);
+    if (skippedReason) return skippedReason;
+
+    await dispatchGithubWorkflow(config.deploy);
+    await chrome.storage.local.set({ [LAST_DEPLOY_TRIGGER_KEY]: Date.now() });
+    return "已触发网站刷新";
+  } catch (error) {
+    await recordResult({
+      ok: false,
+      title: syncResult.title,
+      url: syncResult.url,
+      message: `飞书已同步，但触发网站刷新失败：${normalizeError(error)}`,
+      syncedAt: new Date().toISOString()
+    });
+    return "网站刷新触发失败，可等定时任务刷新";
+  }
+}
+
+async function shouldSkipDeployTrigger(deployConfig) {
+  const cooldownMs = Math.max(Number(deployConfig.cooldownSeconds) || 120, 30) * 1000;
+  const data = await chrome.storage.local.get(LAST_DEPLOY_TRIGGER_KEY);
+  const lastTriggeredAt = Number(data[LAST_DEPLOY_TRIGGER_KEY]) || 0;
+  if (Date.now() - lastTriggeredAt < cooldownMs) {
+    return "网站刷新已在排队中";
+  }
+  return "";
+}
+
+async function dispatchGithubWorkflow(deployConfig) {
+  const owner = deployConfig.owner?.trim();
+  const repo = deployConfig.repo?.trim();
+  const workflow = deployConfig.workflow?.trim();
+  const ref = deployConfig.ref?.trim();
+  const token = deployConfig.token?.trim();
+
+  if (!owner || !repo || !workflow || !ref || !token) {
+    throw new Error("缺少 GitHub 自动刷新配置");
+  }
+
+  const endpoint = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/actions/workflows/${encodeURIComponent(workflow)}/dispatches`;
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Accept": "application/vnd.github+json",
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "X-GitHub-Api-Version": "2022-11-28"
+    },
+    body: JSON.stringify({ ref })
+  });
+
+  if (response.status !== 204) {
+    const body = await response.text();
+    throw new Error(`GitHub Actions 触发失败：http=${response.status}; body=${body || "empty"}`);
+  }
 }
 
 async function getBitableTarget(config) {

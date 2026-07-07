@@ -13,6 +13,7 @@
   "host_permissions": [
     "https://open.feishu.cn/*",
     "https://open.larksuite.com/*",
+    "https://api.github.com/*",
     "<all_urls>"
   ],
   "background": {

@@ -101,7 +101,18 @@ website/data/resources.json
    - `DOWNLOAD_COVERS`
 5. 手动运行一次 `Deploy resources site` 工作流，确认发布成功。
 
-默认工作流每小时同步一次，也支持手动触发。公司电脑和家里电脑只需要安装并配置同一个扩展，收藏内容写入同一个飞书表格即可。
+默认工作流每 15 分钟同步一次，也支持手动触发。公司电脑和家里电脑只需要安装并配置同一个扩展，收藏内容写入同一个飞书表格即可。
+
+如果希望收藏后网站尽快刷新，可以在扩展设置页开启“网站自动刷新”。开启后，扩展会在成功写入飞书后调用 GitHub Actions 的 `workflow_dispatch` 接口，触发一次部署；15 分钟定时任务仍会保留作为兜底。
+
+需要在扩展设置页填写：
+
+- `GitHub 用户名`：例如 `ccfffcc`
+- `GitHub 仓库名`：例如 `resource-site`
+- `工作流文件名`：`deploy-resources-site.yml`
+- `部署分支`：当前是 `master`
+- `GitHub Token`：需要有触发 Actions 的权限
+- `触发间隔`：默认 120 秒，避免连续收藏多个网页时频繁触发部署
 
 ## 飞书准备
 

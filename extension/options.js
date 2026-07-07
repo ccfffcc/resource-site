@@ -12,6 +12,15 @@ const DEFAULT_CONFIG = {
     maxContentChars: 12000,
     categories: "动效, 图标, 插画, 字体, 配色, 设计工具, 设计灵感, UI/UX, 前端开发, 后端开发, 开发工具, AI工具, 提示词, 写作, 办公效率, 产品运营, 营销增长, 数据分析, 学习资料, 文章, 资源导航, 其他"
   },
+  deploy: {
+    enabled: false,
+    owner: "",
+    repo: "resource-site",
+    workflow: "deploy-resources-site.yml",
+    ref: "master",
+    token: "",
+    cooldownSeconds: 120
+  },
   fields: {
     title: "标题",
     url: "URL",
@@ -71,6 +80,13 @@ function fillForm(config) {
   form.translationModel.value = config.translation.model;
   form.translationMaxContentChars.value = config.translation.maxContentChars;
   form.translationCategories.value = config.translation.categories;
+  form.deployEnabled.checked = config.deploy.enabled;
+  form.deployOwner.value = config.deploy.owner;
+  form.deployRepo.value = config.deploy.repo;
+  form.deployWorkflow.value = config.deploy.workflow;
+  form.deployRef.value = config.deploy.ref;
+  form.deployToken.value = config.deploy.token;
+  form.deployCooldownSeconds.value = config.deploy.cooldownSeconds;
   form.fieldTitle.value = config.fields.title;
   form.fieldUrl.value = config.fields.url;
   form.fieldDomain.value = config.fields.domain;
@@ -96,6 +112,15 @@ function readForm() {
       maxContentChars: Number(form.translationMaxContentChars.value) || 12000,
       categories: form.translationCategories.value.trim()
     },
+    deploy: {
+      enabled: form.deployEnabled.checked,
+      owner: form.deployOwner.value.trim(),
+      repo: form.deployRepo.value.trim(),
+      workflow: form.deployWorkflow.value.trim(),
+      ref: form.deployRef.value.trim(),
+      token: form.deployToken.value.trim(),
+      cooldownSeconds: Number(form.deployCooldownSeconds.value) || 120
+    },
     fields: {
       title: form.fieldTitle.value.trim(),
       url: form.fieldUrl.value.trim(),
@@ -116,6 +141,10 @@ function mergeConfig(defaultConfig, savedConfig) {
     translation: {
       ...defaultConfig.translation,
       ...(savedConfig.translation || {})
+    },
+    deploy: {
+      ...defaultConfig.deploy,
+      ...(savedConfig.deploy || {})
     },
     fields: {
       ...defaultConfig.fields,
