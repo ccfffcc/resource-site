@@ -173,7 +173,7 @@ async function listRecords(token, appToken, tableId) {
 
 async function mapRecordToResource(record, token) {
   const fields = record.fields || {};
-  const coverToken = extractAttachmentToken(fields[config.fields.cover]);
+  const coverAttachment = extractAttachment(fields[config.fields.cover]);
   return {
     id: record.record_id,
     title: textValue(fields[config.fields.title]),
@@ -182,26 +182,30 @@ async function mapRecordToResource(record, token) {
     summary: textValue(fields[config.fields.summary]),
     tags: arrayValue(fields[config.fields.tags]),
     category: textValue(fields[config.fields.category]) || "未分类",
-    coverUrl: await coverUrlValue(coverToken, token, record.record_id),
+    coverUrl: await coverUrlValue(coverAttachment, token, record.record_id, textValue(fields[config.fields.title])),
     createdAt: dateValue(fields[config.fields.createdAt])
   };
 }
 
-async function coverUrlValue(fileToken, token, recordId) {
-  if (!fileToken) return "";
+async function coverUrlValue(attachment, token, recordId, title) {
+  if (!attachment.token) {
+    console.warn(`No cover token for ${recordId} ${title || ""}`.trim());
+    return "";
+  }
   if (!config.downloadCovers) return "";
 
   const coverDir = path.join(config.outputDir, "assets", "covers");
   await fs.mkdir(coverDir, { recursive: true });
-  const fileName = `${recordId}.png`;
+  const fileName = `${recordId}${attachment.extension || ".png"}`;
   const outputPath = path.join(coverDir, fileName);
-  const endpoint = `${trimTrailingSlash(config.feishuBaseUrl)}/open-apis/drive/v1/medias/${encodeURIComponent(fileToken)}/download`;
+  const endpoint = `${trimTrailingSlash(config.feishuBaseUrl)}/open-apis/drive/v1/medias/${encodeURIComponent(attachment.token)}/download`;
   const response = await fetch(endpoint, {
     headers: { Authorization: `Bearer ${token}` }
   });
 
   if (!response.ok) {
-    console.warn(`Skip cover for ${recordId}: ${response.status}`);
+    const body = await response.text();
+    console.warn(`Skip cover for ${recordId} ${title || ""}: ${response.status} ${body}`.trim());
     return "";
   }
   const buffer = Buffer.from(await response.arrayBuffer());
@@ -250,15 +254,37 @@ function arrayValue(value) {
   return [textValue(value)].filter(Boolean);
 }
 
-function extractAttachmentToken(value) {
-  if (!value) return "";
+function extractAttachment(value) {
+  if (!value) return { token: "", extension: ".png" };
   if (Array.isArray(value)) {
     for (const item of value) {
-      const token = extractAttachmentToken(item);
-      if (token) return token;
+      const attachment = extractAttachment(item);
+      if (attachment.token) return attachment;
     }
   }
-  return value.file_token || value.token || "";
+
+  if (typeof value === "object") {
+    const token = value.file_token || value.token || value.fileToken || value.tmp_url || value.url || "";
+    return {
+      token,
+      extension: normalizeImageExtension(value.name || value.file_name || value.fileName || value.type || "")
+    };
+  }
+
+  if (typeof value === "string") {
+    return {
+      token: value,
+      extension: normalizeImageExtension(value)
+    };
+  }
+
+  return { token: "", extension: ".png" };
+}
+
+function normalizeImageExtension(value) {
+  const match = String(value).toLowerCase().match(/\.(png|jpe?g|webp|gif)(?:$|\?)/);
+  if (!match) return ".png";
+  return match[0].replace(/\?.*$/, "").replace(".jpeg", ".jpg");
 }
 
 function dateValue(value) {
