@@ -12,7 +12,7 @@ const config = {
   bitableSource: process.env.BITABLE_SOURCE || "",
   tableId: process.env.TABLE_ID || "",
   outputDir: process.env.OUTPUT_DIR || "website",
-  downloadCovers: process.env.DOWNLOAD_COVERS === "1",
+  downloadCovers: process.env.DOWNLOAD_COVERS !== "0",
   fields: {
     title: process.env.FIELD_TITLE || "标题",
     url: process.env.FIELD_URL || "URL",
@@ -200,7 +200,10 @@ async function coverUrlValue(fileToken, token, recordId) {
     headers: { Authorization: `Bearer ${token}` }
   });
 
-  if (!response.ok) return "";
+  if (!response.ok) {
+    console.warn(`Skip cover for ${recordId}: ${response.status}`);
+    return "";
+  }
   const buffer = Buffer.from(await response.arrayBuffer());
   await fs.writeFile(outputPath, buffer);
   return `assets/covers/${fileName}`;

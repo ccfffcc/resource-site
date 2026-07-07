@@ -67,8 +67,8 @@ website/data/resources.json
 
 封面图：
 
-- 默认 `DOWNLOAD_COVERS=0`，网站会用分类占位封面。
-- 如果要把飞书附件封面下载到网站目录，设置 `DOWNLOAD_COVERS=1`。
+- 默认 `DOWNLOAD_COVERS=1`，同步时会把飞书附件封面下载到网站目录并展示。
+- 如果不想下载封面，可以设置 `DOWNLOAD_COVERS=0`，网站会用分类占位封面。
 - 下载封面可能需要额外的飞书 Drive/素材读取权限。
 
 ## 上线部署

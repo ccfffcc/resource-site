@@ -46,7 +46,7 @@ jobs:
           BITABLE_SOURCE: ${{ secrets.BITABLE_SOURCE }}
           TABLE_ID: ${{ secrets.TABLE_ID }}
           OUTPUT_DIR: website
-          DOWNLOAD_COVERS: ${{ vars.DOWNLOAD_COVERS || '0' }}
+          DOWNLOAD_COVERS: ${{ vars.DOWNLOAD_COVERS || '1' }}
           FIELD_TITLE: ${{ vars.FIELD_TITLE || '标题' }}
           FIELD_URL: ${{ vars.FIELD_URL || 'URL' }}
           FIELD_DOMAIN: ${{ vars.FIELD_DOMAIN || '域名' }}
