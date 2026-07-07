@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>个人资源库</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1>个人资源库</h1>
+          <p id="resource-count">正在载入</p>
+        </div>
+
+        <label class="search">
+          <span>搜索</span>
+          <input id="search-input" type="search" placeholder="标题、摘要、标签、域名">
+        </label>
+
+        <section>
+          <h2>分类</h2>
+          <div id="category-list" class="filter-list"></div>
+        </section>
+
+        <section>
+          <h2>标签</h2>
+          <div id="tag-list" class="tag-filter-list"></div>
+        </section>
+      </aside>
+
+      <section class="content">
+        <header class="toolbar">
+          <div>
+            <p class="eyebrow">Feishu Sync</p>
+            <h2 id="view-title">全部资源</h2>
+          </div>
+          <select id="sort-select" aria-label="排序">
+            <option value="newest">最新收藏</option>
+            <option value="title">标题排序</option>
+            <option value="domain">域名排序</option>
+          </select>
+        </header>
+
+        <div id="resource-grid" class="resource-grid"></div>
+        <p id="empty-state" class="empty-state" hidden>没有找到匹配的资源。</p>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

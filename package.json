@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "sync": "node scripts/sync-feishu.js",
+    "serve": "python3 -m http.server 5173 -d website"
+  }
+}

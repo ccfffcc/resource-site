@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>飞书书签同步设置</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="page">
+      <section class="panel">
+        <h1>飞书书签同步设置</h1>
+        <form id="options-form">
+          <label>
+            飞书开放平台地址
+            <input name="feishuBaseUrl" placeholder="https://open.feishu.cn" required>
+          </label>
+          <label>
+            App ID
+            <input name="appId" autocomplete="off" required>
+          </label>
+          <label>
+            App Secret
+            <input name="appSecret" type="password" autocomplete="off" required>
+          </label>
+          <label>
+            多维表格来源
+            <input name="appToken" placeholder="可填 /base 链接、/wiki 链接、app_token 或 wiki node token" required>
+          </label>
+          <label>
+            Table ID（可选）
+            <input name="tableId" placeholder="完整 /base 链接通常可自动解析；手填时应为 tbl...">
+          </label>
+
+          <h2>中文化</h2>
+          <label class="inline">
+            <input name="translationEnabled" type="checkbox">
+            收藏后让 AI 阅读正文并生成中文标题、摘要、标签、分类
+          </label>
+          <label>
+            AI 接口地址
+            <input name="translationEndpoint" placeholder="https://api.openai.com/v1/chat/completions">
+          </label>
+          <label>
+            AI API Key
+            <input name="translationApiKey" type="password" autocomplete="off">
+          </label>
+          <label>
+            模型
+            <input name="translationModel" placeholder="gpt-4o-mini">
+          </label>
+          <label>
+            正文最大长度
+            <input name="translationMaxContentChars" type="number" min="1000" step="1000" placeholder="12000">
+          </label>
+          <label>
+            分类候选
+            <textarea name="translationCategories" rows="4" placeholder="动效, 图标, 插画, 字体, 配色, 设计工具, 写作, 办公效率"></textarea>
+          </label>
+
+          <h2>字段映射</h2>
+          <label>
+            标题字段
+            <input name="fieldTitle" required>
+          </label>
+          <label>
+            URL 字段
+            <input name="fieldUrl" required>
+          </label>
+          <label>
+            域名字段
+            <input name="fieldDomain">
+          </label>
+          <label>
+            摘要字段
+            <input name="fieldSummary">
+          </label>
+          <label>
+            标签字段
+            <input name="fieldTags">
+          </label>
+          <label>
+            分类字段
+            <input name="fieldCategory">
+          </label>
+          <label>
+            封面图字段（可选）
+            <input name="fieldCoverImage" placeholder="填写附件字段名后，会截取当前页面第一屏作为封面">
+          </label>
+          <label>
+            收藏时间字段
+            <input name="fieldCreatedAt">
+          </label>
+
+          <div class="actions">
+            <button type="submit">保存设置</button>
+            <button type="button" id="test-button" class="secondary">测试同步当前页</button>
+          </div>
+          <p id="status" role="status"></p>
+        </form>
+      </section>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

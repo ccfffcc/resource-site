@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Feishu Bookmark Sync MVP",
+  "description": "Sync newly created Chrome bookmarks to a Feishu Bitable table.",
+  "version": "0.5.1",
+  "permissions": [
+    "activeTab",
+    "bookmarks",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://open.feishu.cn/*",
+    "https://open.larksuite.com/*",
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "options_page": "options.html",
+  "action": {
+    "default_title": "Feishu Bookmark Sync",
+    "default_popup": "popup.html"
+  }
+}

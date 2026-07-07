@@ -1,0 +1,66 @@
+name: Deploy resources site
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "website/**"
+      - "scripts/sync-feishu.js"
+      - "package.json"
+      - ".github/workflows/deploy-resources-site.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Sync Feishu resources
+        run: npm run sync
+        env:
+          FEISHU_BASE_URL: ${{ secrets.FEISHU_BASE_URL }}
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          BITABLE_SOURCE: ${{ secrets.BITABLE_SOURCE }}
+          TABLE_ID: ${{ secrets.TABLE_ID }}
+          OUTPUT_DIR: website
+          DOWNLOAD_COVERS: ${{ vars.DOWNLOAD_COVERS || '0' }}
+          FIELD_TITLE: ${{ vars.FIELD_TITLE || '标题' }}
+          FIELD_URL: ${{ vars.FIELD_URL || 'URL' }}
+          FIELD_DOMAIN: ${{ vars.FIELD_DOMAIN || '域名' }}
+          FIELD_SUMMARY: ${{ vars.FIELD_SUMMARY || '摘要' }}
+          FIELD_TAGS: ${{ vars.FIELD_TAGS || '标签' }}
+          FIELD_CATEGORY: ${{ vars.FIELD_CATEGORY || '分类' }}
+          FIELD_COVER: ${{ vars.FIELD_COVER || '封面图' }}
+          FIELD_CREATED_AT: ${{ vars.FIELD_CREATED_AT || '收藏时间' }}
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: website
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

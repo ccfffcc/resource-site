@@ -1,0 +1,209 @@
+:root {
+  color-scheme: light;
+  --bg: #f7f8fb;
+  --panel: #ffffff;
+  --text: #172033;
+  --muted: #65708a;
+  --border: #dfe4ee;
+  --accent: #1f7a5b;
+  --accent-hover: #186449;
+  --danger: #b42318;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.panel {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: 28px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-size: 24px;
+}
+
+h2 {
+  margin: 28px 0 12px;
+  font-size: 17px;
+}
+
+form {
+  display: grid;
+  gap: 14px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+label.inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+label.inline input {
+  width: 16px;
+  min-height: 16px;
+}
+
+input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+}
+
+textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  resize: vertical;
+  font: inherit;
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--accent);
+  outline: 3px solid rgba(31, 122, 91, 0.14);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+button:hover {
+  background: var(--accent-hover);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+button.secondary {
+  background: #fff;
+  color: var(--accent);
+}
+
+#status {
+  min-height: 22px;
+  margin: 0;
+}
+
+.success {
+  color: var(--accent);
+}
+
+.error {
+  color: var(--danger);
+}
+
+.popup {
+  width: 360px;
+  background: #fff;
+}
+
+.popup-panel {
+  padding: 16px;
+}
+
+.popup h1 {
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.results {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.result {
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 6px;
+}
+
+.result.ok {
+  border-left-color: var(--accent);
+}
+
+.result.failed {
+  border-left-color: var(--danger);
+}
+
+.result strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result pre,
+.result time {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.result pre {
+  max-height: 160px;
+  margin: 0;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  font-family: inherit;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.empty {
+  margin: 0;
+  color: var(--muted);
+}
