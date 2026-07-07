@@ -13,6 +13,8 @@ const config = {
   tableId: process.env.TABLE_ID || "",
   outputDir: process.env.OUTPUT_DIR || "website",
   downloadCovers: process.env.DOWNLOAD_COVERS !== "0",
+  coverMaxWidth: Number(process.env.COVER_MAX_WIDTH) || 900,
+  coverQuality: Number(process.env.COVER_QUALITY) || 72,
   fields: {
     title: process.env.FIELD_TITLE || "标题",
     url: process.env.FIELD_URL || "URL",
@@ -65,7 +67,10 @@ async function main() {
   const appToken = await resolveBitableAppToken(token);
   const tableId = resolveTableId();
   const records = await listRecords(token, appToken, tableId);
-  const resources = await Promise.all(records.map((record) => mapRecordToResource(record, token)));
+  const resources = [];
+  for (const record of records) {
+    resources.push(await mapRecordToResource(record, token));
+  }
   const sortedResources = resources
     .filter((item) => item.url)
     .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
@@ -196,21 +201,54 @@ async function coverUrlValue(attachment, token, recordId, title) {
 
   const coverDir = path.join(config.outputDir, "assets", "covers");
   await fs.mkdir(coverDir, { recursive: true });
-  const fileName = `${recordId}${attachment.extension || ".png"}`;
-  const outputPath = path.join(coverDir, fileName);
   const endpoint = `${trimTrailingSlash(config.feishuBaseUrl)}/open-apis/drive/v1/medias/${encodeURIComponent(attachment.token)}/download`;
-  const response = await fetch(endpoint, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
 
-  if (!response.ok) {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    if (attempt > 0) {
+      await sleep(attempt * 1500);
+    }
+
+    const response = await fetch(endpoint, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      const buffer = Buffer.from(await response.arrayBuffer());
+      const coverPath = await writeOptimizedCover(buffer, coverDir, recordId, attachment.extension);
+      await sleep(800);
+      return coverPath;
+    }
+
     const body = await response.text();
+    if (isFeishuRateLimit(body) && attempt < 3) {
+      console.warn(`Retry cover for ${recordId} ${title || ""}: ${response.status} rate limited`.trim());
+      continue;
+    }
+
     console.warn(`Skip cover for ${recordId} ${title || ""}: ${response.status} ${body}`.trim());
     return "";
   }
-  const buffer = Buffer.from(await response.arrayBuffer());
-  await fs.writeFile(outputPath, buffer);
-  return `assets/covers/${fileName}`;
+
+  return "";
+}
+
+async function writeOptimizedCover(buffer, coverDir, recordId, extension) {
+  try {
+    const sharp = require("sharp");
+    const fileName = `${recordId}.webp`;
+    const outputPath = path.join(coverDir, fileName);
+    await sharp(buffer)
+      .resize({ width: config.coverMaxWidth, withoutEnlargement: true })
+      .webp({ quality: config.coverQuality })
+      .toFile(outputPath);
+    return `assets/covers/${fileName}`;
+  } catch (error) {
+    const fileName = `${recordId}${extension || ".png"}`;
+    const outputPath = path.join(coverDir, fileName);
+    await fs.writeFile(outputPath, buffer);
+    console.warn(`Cover compression skipped for ${recordId}: ${error.message}`);
+    return `assets/covers/${fileName}`;
+  }
 }
 
 async function requestJson(endpoint, options = {}) {
@@ -285,6 +323,18 @@ function normalizeImageExtension(value) {
   const match = String(value).toLowerCase().match(/\.(png|jpe?g|webp|gif)(?:$|\?)/);
   if (!match) return ".png";
   return match[0].replace(/\?.*$/, "").replace(".jpeg", ".jpg");
+}
+
+function isFeishuRateLimit(body) {
+  try {
+    return JSON.parse(body).code === 99991400;
+  } catch (_error) {
+    return body.includes("frequency limit");
+  }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function dateValue(value) {
