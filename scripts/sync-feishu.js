@@ -13,7 +13,7 @@ const config = {
   tableId: process.env.TABLE_ID || "",
   outputDir: process.env.OUTPUT_DIR || "website",
   downloadCovers: process.env.DOWNLOAD_COVERS !== "0",
-  coverMaxWidth: Number(process.env.COVER_MAX_WIDTH) || 900,
+  coverMaxWidth: Number(process.env.COVER_MAX_WIDTH) || 1500,
   coverQuality: Number(process.env.COVER_QUALITY) || 72,
   fields: {
     title: process.env.FIELD_TITLE || "标题",
